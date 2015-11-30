@@ -1,0 +1,381 @@
+# Stats 170 Project R script
+# Yanying Qiu
+# 404160832
+
+##### section 2.1 #######
+########### Description of the data ##########
+# read in data
+dat <- read.delim("~/Desktop/table14-3.csv", header=FALSE)
+dat1 <- dat[1:398,2]
+dat2 <- dat[1:398,3]
+dat3 <- dat[1:398,4]
+# convert data to time series
+dat1 <- ts(dat1,start=1982,frequency=12)
+dat2 <- ts(dat2,start=1982,frequency=12)
+dat3 <- ts(dat3,start=1982,frequency=12)
+# plot the three time series
+par(mfrow=c(3,1))
+plot(dat1,main="Monthly Corn Price 1982-2015",ylab="Corn Price")
+plot(dat2,main="Monthly Ethanol Price 1982-2015",ylab="Ethanol Price")
+plot(dat3,main="Monthly Gasoline Price 1982-2015",ylab="Gasoline Price")
+
+###### section 2.2 #######
+############# Classical decomposition of the data ###############
+# Do additive decompoition for the time series
+a <- decompose(dat1,"additive")
+plot(cbind(observed=a$random+a$trend+a$seasonal,trend=a$trend,seasonal=a$seasonal,random=a$random),main="Additive Decomposition of Corn Price from 1982 to 2015")
+b <- decompose(dat2,"additive")
+plot(cbind(observed=b$random+b$trend+b$seasonal,trend=b$trend,seasonal=b$seasonal,random=b$random),main="Additive Decomposition of Ethanol Price from 1982 to 2015")
+c <- decompose(dat3,"additive")
+plot(cbind(observed=c$random+c$trend+c$seasonal,trend=c$trend,seasonal=c$seasonal,random=c$random),main="Additive Decomposition of Gasoline Price from 1982 to 2015")
+# Do multiplicative decomposition for the time series
+d <- decompose(dat1,"mult")
+plot(cbind(observed=d$random+d$trend*d$seasonal,trend=d$trend,seasonal=d$seasonal,random=d$random),main="Multiplicative Decomposition of Corn Price from 1982 to 2015")
+e <- decompose(dat2,"mult")
+plot(cbind(observed=d$random+d$trend*d$seasonal,trend=d$trend,seasonal=d$seasonal,random=d$random),main="Multiplicative Decomposition of Ethanol Price from 1982 to 2015")
+f <- decompose(dat3,"mult")
+plot(cbind(observed=d$random+d$trend*d$seasonal,trend=d$trend,seasonal=d$seasonal,random=d$random),main="Multiplicative Decomposition of Gasoline Price from 1982 to 2015")
+
+####### section 2.3 #######
+########### Pre-differencing transformations ############
+# Do log, sqrt and qrt transformations for the corn price data and plot
+x <- ts(dat1[1:(length(dat1)-12)],frequency=12,start=c(1982,1))
+lnx.ts <- ts(log(x),frequency=12,start=c(1982,1))
+sqrx.ts <- ts(sqrt(x),frequency=12,start=c(1982,1))
+qrtx.ts <- ts(x^(0.25),frequency=12,start=c(1982,1))
+par(mfrow=c(1,1))
+plot.ts(lnx.ts,type="l",main="time series plot of ln(corn) data")
+plot.ts(sqrx.ts,type="l",main="time series plot of sqrt(corn) data")
+plot.ts(qrtx.ts,type="l",main="time series plot of qrt(corn) data")
+# Do log, sqrt and qrt transformations for the ethanol price data and plot
+y <- ts(dat2[1:(length(dat2)-12)],frequency=12,start=c(1982,1))
+lny.ts <- ts(log(y),frequency=12,start=c(1982,1))
+sqry.ts <- ts(sqrt(y),frequency=12,start=c(1982,1))
+qrty.ts <- ts(y^(0.25),frequency=12,start=c(1982,1))
+par(mfrow=c(1,1))
+plot.ts(lny.ts,type="l",main="time series plot of ln(ethanol) data")
+plot.ts(sqry.ts,type="l",main="time series plot of sqrt(ethanol) data")
+plot.ts(qrty.ts,type="l",main="time series plot of qrt(ethanol) data")
+# Do log, sqrt and qrt transformations for the gasoline price data and plot
+z <- ts(dat3[1:(length(dat3)-12)],frequency=12,start=c(1982,1))
+lnz.ts <- ts(log(z),frequency=12,start=c(1982,1))
+sqrz.ts <- ts(sqrt(z),frequency=12,start=c(1982,1))
+qrtz.ts <- ts(z^(0.25),frequency=12,start=c(1982,1))
+par(mfrow=c(1,1))
+plot.ts(lnz.ts,type="l",main="time series plot of ln(gasoline) data")
+plot.ts(sqrz.ts,type="l",main="time series plot of sqrt(gasoline) data")
+plot.ts(qrtz.ts,type="l",main="time series plot of qrt(gasoline) data")
+
+###### section 2.4 ######
+############### Autocorrelation structure of the data ###############
+# ACF plot for the transformed data
+par(mfrow=c(3,1))
+acf(qrtx.ts,main="ACF of X*")
+acf(qrty.ts,main="ACF of Y*")
+acf(qrtz.ts,main="ACF of Z*")
+
+# ACF for x*
+par(mfrow=c(3,1))
+xdiff1 <- diff(qrtx.ts,lag=1,differences=1)
+acf(xdiff1,main="ACF of (1-B)X*")
+xdiff12 <- diff(qrtx.ts,lag=12,differences=1)
+acf(xdiff12,main="ACF of (1-B^12)X*")
+xdiff1diff12 <- diff(xdiff1,lag=12,differences=1)
+acf(xdiff1diff12,main="ACF of (1-B^12)(1-B)X*")
+
+# ACF for y*
+par(mfrow=c(3,1))
+ydiff1 <- diff(qrty.ts,lag=1,differences=1)
+acf(ydiff1,main="ACF of (1-B)Y*")
+ydiff12 <- diff(qrty.ts,lag=12,differences=1)
+acf(ydiff12,main="ACF of (1-B^12)Y*")
+ydiff1diff12 <- diff(ydiff1,lag=12,differences=1)
+acf(ydiff1diff12,main="ACF of (1-B^12)(1-B)Y*")
+
+# ACF for z*
+par(mfrow=c(3,1))
+zdiff1 <- diff(qrtz.ts,lag=1,differences=1)
+acf(zdiff1,main="ACF of (1-B)Z*")
+zdiff12 <- diff(qrtz.ts,lag=12,differences=1)
+acf(zdiff12,main="ACF of (1-B^12)Z*")
+zdiff1diff12 <- diff(zdiff1,lag=12,differences=1)
+acf(zdiff1diff12,main="ACF of (1-B^12)(1-B)Z*")
+
+# Ljung-Box tests for white noise
+xdiff.decomp <- decompose(xdiff1,"additive")
+Box.test(xdiff.decomp$random,lag=25,type="Ljung-Box")
+ydiff.decomp <- decompose(ydiff1,"additive")
+Box.test(ydiff.decomp$random,lag=25,type="Ljung-Box")
+zdiff.decomp <- decompose(zdiff1,"additive")
+Box.test(zdiff.decomp$random,lag=25,type="Ljung-Box")
+
+# Do partial ACF for the data to prepare for model identification
+pacf(xdiff1,main="PACF of (1-B)X*")
+pacf(ydiff1,main="PACF of (1-B)Y*")
+pacf(zdiff1,main="PACF of (1-B)Z*")
+
+# Do ccf for the data to examine their relations
+ccf(xdiff1,zdiff1,main="CCF of (1-B)X* and (1-B)Z*")
+ccf(xdiff1,ydiff1,main="CCF of (1-B)X* and (1-B)Y*")
+ccf(ydiff1,zdiff1,main="CCF of (1-B)Y* and (1-B)Z*")
+
+######## section 3.1 ###########
+############### Identification of Models ###############
+# ACF and PACF of (1-B^12)(1-B)Z*
+par(mfrow=c(2,1))
+acf(zdiff1diff12,main="ACF of (1-B^12)(1-B)Z*")
+pacf(zdiff1diff12,main="PACF of (1-B^12)(1-B)Z*")
+
+# build model 1 ARIMA(0,1,2)(0,1,3)
+model1 <- arima(qrtz.ts,order=c(0,1,2),seas=list(order=c(0,1,3),12))
+acf(resid(model1),main="ACF of residuals of model 1")
+
+# Ljung Box test
+Box.test(resid(model1),lag=25,type="Ljung-Box")
+
+# Normality test
+shapiro.test(resid(model1))
+
+# build model 2 ARIMA(0,1,2)(3,1,3)
+model2 <- arima(qrtz.ts,order=c(0,1,2),seas=list(order=c(3,1,3),12))
+acf(resid(model2),main="ACF of residuals of model 2")
+
+# Ljung Box test
+Box.test(resid(model2),lag=25,type="Ljung-Box")
+
+# Normality test
+shapiro.test(resid(model2))
+
+# Compare AIC of model 1 and model 2
+AIC(model1)
+AIC(model2)
+
+########## section 3.2 ###########
+################ Estimation Results ###############
+# Ljung Box test
+Box.test(resid(model2),lag=25,type="Ljung-Box")
+
+# Normality test
+shapiro.test(resid(model2))
+
+######### section 3.3 #########
+################ Forecasts and standard error of the forecasts ###############
+# forecast the last 12 observations using our model.
+forecast <- predict(model1,12)
+forecast.value <- ts((forecast$pred)^4,start=c(2014,3),end=c(2015,2),freq=12)
+last12data=dat3[(length(dat3)-12+1):length(dat3)]
+
+# compute the MSE
+MSE <- sqrt((sum(last12data-forecast.value)^2)/12)
+MSE
+
+# prepare the confidence interval  
+forecast.se <- ts((forecast$se)^4,start=c(2014,3),end=c(2015,2),freq=12)
+ci.low <- ts(forecast.value-1.96*forecast.se,start=c(2014,3),end=c(2015,2),freq=12)
+ci.high <- ts(forecast.value+1.96*forecast.se,start=c(2014,3),end=c(2015,2),freq=12)
+
+# plot observed and forecasted values
+ts.plot(cbind(z,forecast.value,ci.low,ci.high),lty=c(1,3,2,3),main="Observed and Forecasted Gasoline Price",ylab="Gasoline Price")
+ts.plot(cbind(forecast.value,last12data),lty=c(1,2),main="Forecast and Observed Data 2015",ylab="Gasoline Price")
+
+########## section 4.1 ########
+######### Simple Linear Regression and Transformation ##########
+# Fit a simple linear model with dependent variable and independent variables only
+x <- ts(dat1[1:(length(dat1)-12)],frequency=12,start=c(1982,1))
+y <- ts(dat2[1:(length(dat2)-12)],frequency=12,start=c(1982,1))
+z <- ts(dat3[1:(length(dat3)-12)],frequency=12,start=c(1982,1))
+model1 <- lm(z~x+y)
+summary(model1)
+
+# check the residuals
+par(mfrow=c(2,2))
+acf(resid(model1))
+plot(y=resid(model1),x=as.vector(time(z)),xlab="time",ylab="Standardized residuals",type="o")
+abline(h=0)
+hist(resid(model1))
+qqnorm(resid(model1))
+
+# take log of the dependent variable and fit a new model (model 2)
+model2 <- lm(z.qrt~x.qrt+y.qrt)
+
+# check residual plots of model 2
+par(mfrow=c(2,2))
+acf(resid(model2))
+plot(y=resid(model2),x=as.vector(time(z)),xlab="time",ylab="Standardized residuals",type="o")
+abline(h=0)
+hist(resid(model2))
+qqnorm(resid(model2))
+
+
+############ section 4.2 ############
+####### Improving model by adding seasonal dummies and polynomials ######
+# fit T1 to model
+T1 <- 1:386
+model3 <- lm(z.qrt~x.qrt+y.qrt+T1)
+
+# check residuals of model 3
+par(mfrow=c(2,2))
+acf(resid(model3))
+plot(y=resid(model3),x=as.vector(time(z)),xlab="time",ylab="Standardized residuals",type="o")
+abline(h=0)
+hist(resid(model3))
+qqnorm(resid(model3))
+
+# add more polynomial terms
+T1 <- 1:386
+T2 <- T1^2
+T3 <- T1^3
+T4 <- T1^4
+T5 <- T1^5
+model4 <- lm(z.qrt~x.qrt+y.qrt+T1+T2+T3+T4+T5)
+
+# check residuals of model 4
+par(mfrow=c(2,2))
+acf(resid(model4))
+plot(y=resid(model4),x=as.vector(time(z)),xlab="time",ylab="Standardized residuals",type="o")
+abline(h=0)
+hist(resid(model4))
+qqnorm(resid(model4))
+
+# check ACF and PACF to identify arma model
+par(mfrow=c(2,1))
+acf(resid(model4))
+pacf(resid(model4))
+
+# fit an arma model and check its residuals
+arma2.6 <- arima(ts(resid(model3)),order=c(2,0,6),include.mean=F)
+acf(resid(arma2.6))
+Box.test(resid(arma2.6))
+
+# build a new model (model 5) with the correlation term
+library(nlme)
+model5 <- gls(z.qrt~x.qrt+y.qrt+T1+T2+T3+T4+T5,correlation=corARMA(c(coef(arma2.6)),p=2,q=6))
+
+# check residuals of model 5
+acf(resid(model5,type="normalized"))
+
+############ section 4.3 ###########
+######## Final Model ########
+# get the coefficients of the final model
+summary(model5)
+
+############ section 4.4 ############
+######### Forecasting with final regression model ########
+x <- ts(dat1[(length(dat1)-12+1):length(dat1)])
+y <- ts(dat2[(length(dat2)-12+1):length(dat2)])
+newT1 <- 387:398
+newT2 <- newT1^2
+newT3 <- newT1^3
+newT4 <- newT1^4
+newT5 <- newT1^5
+new.dat <- data.frame(x.qrt,y.qrt,T1=newT1,T2=newT2,T3=newT3,T4=newT4,T5=newT5)
+pred <- (predict(model5,new.dat))^4
+z_hat.ts <- ts(pred,start=c(2014,3),freq=12)
+MSE2 <- sqrt((sum(last12data-z_hat.ts)^2)/12)
+
+# plot forecast with other values
+par(mfrow=c(1,1))
+ts.plot(cbind(z,z_hat.ts),lty=c(1,2),main="Plot in sample data and forecast 2014-3~2015-2",ylab="Gasoline Price")
+
+# plot forecast with observed values
+par(mfrow=c(1,1))
+ts.plot(cbind(last12data,z_hat.ts),lty=c(1,2),main="Forecast and observed data",ylab="Gasoline price")
+
+
+################## section 5.1 ###############
+############ Cross-correlations ##############
+# cross-correlation plots for all three pairs of variables
+par(mfrow=c(3,1))
+ccf(zdiff1diff12,xdiff1diff12, main="CCF of (1-B^12)(1-B)X* and (1-B^12)(1-B)Z*")
+ccf(ydiff1diff12,xdiff1diff12,main="CCF of (1-B^12)(1-B)X* and (1-B^12)(1-B)Y*")
+ccf(ydiff1diff12,zdiff1diff12,main="CCF of (1-B^12)(1-B)Y* and (1-B^12)(1-B)Z*")
+
+################## section 5.2 ###################
+############ Unit root tests and cointegration tests ###########
+# Unit root tests
+library(tseries)
+adf.test(qrtx.ts)$p.value
+adf.test(qrty.ts)$p.value
+adf.test(qrtz.ts)$p.value
+
+# Cointegration tests
+po.test(cbind(qrtx.ts,qrty.ts))
+po.test(cbind(qrtx.ts,qrtz.ts))
+po.test(cbind(qrty.ts,qrtz.ts))
+
+############### section 5.3 ################
+########### Fitting of the VAR ###########
+# use ar command to find our best VAR model
+ar.fit <- ar(cbind(qrtx.ts,qrty.ts,qrtz.ts),method="ols",dmean=T,intercept=F)
+ar.fit$ar
+
+# look at ACF of residuals to see if model is good fit
+par(mfrow=c(3,1))
+acf(ar.fit$res[-c(1:3),1], main="ACF of residuals of VAR model for X*")
+acf(ar.fit$res[-c(1:3),2], main="ACF of residuals of VAR model for Y*")
+acf(ar.fit$res[-c(1:3),3], main="ACF of residuals of VAR model for Z*")
+
+# look at ccf of residuals of model to see if it is bivariate white noise
+ccf(ar.fit$res[-c(1:3),1],ar.fit$res[-c(1:3),2],main="Cross-correlation of residuals of VAR model of X* and Y*")
+ccf(ar.fit$res[-c(1:3),1],ar.fit$res[-c(1:3),3],main="Cross-correlation of residuals of VAR model of X* and Z*")
+ccf(ar.fit$res[-c(1:3),2],ar.fit$res[-c(1:3),3],main="Cross-correlation of residuals of VAR model of Y* and Z*")
+
+# fit VAR model suggested by ar command
+library(vars)
+var.fit <- VAR(cbind(qrtx.ts,qrty.ts,qrtz.ts),p=3,type="const")
+coef(var.fit)
+
+# look at ACF of residuals of model to see if it is good fit
+par(mfrow=c(3,1))
+acf(resid(var.fit)[,1])
+acf(resid(var.fit)[,2])
+acf(resid(var.fit)[,3])
+
+# check ccf to see if residuals of VAR model is bivariate white noise $
+ccf(resid(var.fit)[,1],resid(var.fit)[,2],main="Cross-correlation of residuals of VAR model of X* and Y*")
+ccf(resid(var.fit)[,1],resid(var.fit)[,3],main="Cross-correlation of residuals of VAR model of X* and Z*")
+ccf(resid(var.fit)[,1],resid(var.fit)[,2],main="Cross-correlation of residuals of VAR model of Y* and Z*")
+
+############### section 5.4 ################
+############ Forecasts #############
+# forecast with VAR model
+par(mfrow=c(1,1))
+pred <- predict(var.fit,n.ahead=12)
+z.pred <- ts(pred$fcst$qrtz.ts[,1],st=c(2014,3),fr=12)^4
+
+# plot in sample data and forecast
+ts.plot(cbind(window(qrtz.ts^4,start=1982),z.pred),lty=1:2,main="Plot of in sample data and forecast",ylab="Gasoline Price")
+
+# plot forecast with observed data
+ts.plot(cbind(last12data,z.pred),lty=c(1,2),main="Forecast and observed data",ylab="Gasoline price")
+
+# calculate MSE
+MSE3 <- sqrt((sum(last12data-z.pred)^2)/12)
+
+############## section 5.5 #############
+############## Impulse Response Functions ############
+irf1 <- irf(var.fit,impulse="qrtx.ts",response=c("qrtx.ts","qrty.ts","qrtz.ts"),boot=FALSE,n.ahead=120)
+plot(irf1)
+irf2 <- irf(var.fit,impulse="qrty.ts",response=c("qrtx.ts","qrty.ts","qrtz.ts"),boot=FALSE,n.ahead=120)
+plot(irf2)
+irf3 <- irf(var.fit,impulse="qrtz.ts",response=c("qrtx.ts","qrty.ts","qrtz.ts"),boot=FALSE,n.ahead=120)
+plot(irf3)
+
+################ section 6.1 ################
+############ exponential smoothing ############
+# fit a general exponential smoothing model
+z.hw1 <- HoltWinters(z,seasonal="mult")
+
+############ section 6.2 ###########
+############# Forecast ############
+# forecast with the model
+pred <- predict(z.hw1,n.ahead=12)
+z.pred <- ts(pred,st=c(2014,3),fr=12)
+MSE4 <- sqrt((sum(last12data-z.pred)^2)/12)
+
+# plot in sample data and forecast
+par(mfrow=c(1,1))
+ts.plot(cbind(window(z,start=1982),z.pred),lty=1:2,main="Plot of in sample data and forecast",ylab="Gasoline Price")
+
+# plot observed data with forecast 
+ts.plot(cbind(last12data,z.pred),lty=c(1,2),main="Forecast and observed data",ylab="Gasoline price")
